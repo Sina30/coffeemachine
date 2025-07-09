@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coffee Machine</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: transparent;
+            overflow: hidden;
+            color: #fff;
+        }
+
+        .coffee-menu {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #2c1810 0%, #3d2317 100%);
+            border-radius: 20px;
+            padding: 30px;
+            width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            border: 2px solid #8B4513;
+            display: none;
+        }
+
+        .menu-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .menu-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #D2691E;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .menu-subtitle {
+            font-size: 16px;
+            color: #DEB887;
+            opacity: 0.8;
+        }
+
+        .coffee-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .coffee-card {
+            background: linear-gradient(145deg, #3d2317, #2c1810);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid #8B4513;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .coffee-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: all 0.5s ease;
+        }
+
+        .coffee-card:hover::before {
+            left: 100%;
+        }
+
+        .coffee-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(210, 105, 30, 0.3);
+            border-color: #D2691E;
+        }
+
+        .coffee-card.unavailable {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .coffee-card.unavailable:hover {
+            transform: none;
+            box-shadow: none;
+            border-color: #8B4513;
+        }
+
+        .coffee-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            background: linear-gradient(45deg, #D2691E, #8B4513);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .coffee-image img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .coffee-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #D2691E;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .coffee-ingredients {
+            font-size: 14px;
+            color: #DEB887;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .coffee-price {
+            font-size: 18px;
+            font-weight: bold;
+            color: #90EE90;
+            text-align: center;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #D2691E;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            color: #fff;
+            transform: rotate(90deg);
+        }
+
+        .crafting-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .crafting-container {
+            background: linear-gradient(135deg, #2c1810 0%, #3d2317 100%);
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            border: 2px solid #8B4513;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .crafting-coffee-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            background: linear-gradient(45deg, #D2691E, #8B4513);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+            animation: pulse 1.5s infinite;
+        }
+
+        .crafting-coffee-image img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .crafting-title {
+            font-size: 24px;
+            color: #D2691E;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            width: 300px;
+            height: 8px;
+            background: #3d2317;
+            border-radius: 4px;
+            margin: 20px auto;
+            overflow: hidden;
+            border: 1px solid #8B4513;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #D2691E, #FF6347);
+            width: 0%;
+            transition: width 6s linear;
+        }
+
+        .steam-animation {
+            position: relative;
+            margin: 20px auto;
+            width: 40px;
+            height: 40px;
+        }
+
+        .steam {
+            position: absolute;
+            width: 6px;
+            height: 20px;
+            background: linear-gradient(to top, transparent, #fff);
+            border-radius: 3px;
+            animation: steam 2s infinite ease-in-out;
+        }
+
+        .steam:nth-child(1) {
+            left: 10px;
+            animation-delay: 0s;
+        }
+
+        .steam:nth-child(2) {
+            left: 18px;
+            animation-delay: 0.5s;
+        }
+
+        .steam:nth-child(3) {
+            left: 26px;
+            animation-delay: 1s;
+        }
+
+        @keyframes steam {
+            0%, 100% {
+                opacity: 0;
+                transform: translateY(0) scale(1);
+            }
+            50% {
+                opacity: 1;
+                transform: translateY(-20px) scale(1.2);
+            }
+        }
+
+        .scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: #8B4513 #2c1810;
+        }
+
+        .scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .scrollbar::-webkit-scrollbar-track {
+            background: #2c1810;
+            border-radius: 4px;
+        }
+
+        .scrollbar::-webkit-scrollbar-thumb {
+            background: #8B4513;
+            border-radius: 4px;
+        }
+
+        .scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #D2691E;
+        }
+    </style>
+</head>
+<body>
+    <div id="coffeeMenu" class="coffee-menu scrollbar">
+        <button class="close-btn" onclick="closeCoffeeMenu()">×</button>
+        <div class="menu-header">
+            <div class="menu-title">☕ Coffee Machine</div>
+            <div class="menu-subtitle">Select your perfect brew</div>
+        </div>
+        <div id="coffeeGrid" class="coffee-grid">
+            <!-- Coffee cards will be dynamically added here -->
+        </div>
+    </div>
+
+    <div id="craftingOverlay" class="crafting-overlay">
+        <div class="crafting-container">
+            <div id="craftingCoffeeImage" class="crafting-coffee-image">☕</div>
+            <div id="craftingTitle" class="crafting-title">Brewing your coffee...</div>
+            <div class="progress-bar">
+                <div id="progressFill" class="progress-fill"></div>
+            </div>
+            <div class="steam-animation">
+                <div class="steam"></div>
+                <div class="steam"></div>
+                <div class="steam"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let coffeeData = [];
+
+        function closeCoffeeMenu() {
+            document.getElementById('coffeeMenu').style.display = 'none';
+            fetch(`https://${GetParentResourceName()}/closeCoffeeMenu`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({})
+            });
+        }
+
+        function makeCoffee(coffeeName) {
+            const coffee = coffeeData.find(c => c.name === coffeeName);
+            if (!coffee) return;
+
+            // Check if player has ingredients
+            fetch(`https://${GetParentResourceName()}/checkIngredients`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({coffee: coffeeName})
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.hasItems) {
+                    startCrafting(coffee);
+                    fetch(`https://${GetParentResourceName()}/makeCoffee`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({coffee: coffeeName})
+                    });
+                }
+            });
+        }
+
+        function startCrafting(coffee) {
+            document.getElementById('coffeeMenu').style.display = 'none';
+            document.getElementById('craftingOverlay').style.display = 'flex';
+            
+            const craftingImage = document.getElementById('craftingCoffeeImage');
+            const craftingTitle = document.getElementById('craftingTitle');
+            const progressFill = document.getElementById('progressFill');
+            
+            // Set coffee image
+            if (coffee.image && coffee.image !== '') {
+                craftingImage.innerHTML = `<img src="images/${coffee.image}" alt="${coffee.label}">`;
+            } else {
+                craftingImage.innerHTML = '☕';
+            }
+            
+            craftingTitle.textContent = `Brewing ${coffee.label}...`;
+            
+            // Start progress animation
+            setTimeout(() => {
+                progressFill.style.width = '100%';
+            }, 100);
+            
+            // Hide crafting overlay after 6 seconds
+            setTimeout(() => {
+                document.getElementById('craftingOverlay').style.display = 'none';
+                progressFill.style.width = '0%';
+            }, 6000);
+        }
+
+        function formatIngredients(ingredients) {
+            return Object.entries(ingredients)
+                .map(([item, amount]) => `${amount}x ${item.replace('_', ' ')}`)
+                .join(', ');
+        }
+
+        function renderCoffeeGrid(coffees) {
+            const grid = document.getElementById('coffeeGrid');
+            grid.innerHTML = '';
+            
+            coffees.forEach(coffee => {
+                const card = document.createElement('div');
+                card.className = 'coffee-card';
+                card.onclick = () => makeCoffee(coffee.name);
+                
+                const ingredientsList = formatIngredients(coffee.ingredients);
+                const price = coffee.price ? `$${coffee.price}` : '';
+                
+                card.innerHTML = `
+                    <div class="coffee-image">
+                        ${coffee.image && coffee.image !== '' ? 
+                            `<img src="images/${coffee.image}" alt="${coffee.label}">` : 
+                            '☕'
+                        }
+                    </div>
+                    <div class="coffee-name">${coffee.label}</div>
+                    <div class="coffee-ingredients">${ingredientsList}</div>
+                    ${price ? `<div class="coffee-price">${price}</div>` : ''}
+                `;
+                
+                grid.appendChild(card);
+            });
+        }
+
+        // Listen for messages from the game
+        window.addEventListener('message', function(event) {
+            const data = event.data;
+            
+            if (data.action === 'openCoffeeMenu') {
+                coffeeData = data.coffees;
+                renderCoffeeGrid(coffeeData);
+                document.getElementById('coffeeMenu').style.display = 'block';
+            } else if (data.action === 'startCrafting') {
+                startCrafting(data.coffee);
+            }
+        });
+
+        // Close menu when ESC is pressed
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeCoffeeMenu();
+            }
+        });
+
+        // Prevent right-click context menu
+        document.addEventListener('contextmenu', function(event) {
+            event.preventDefault();
+        });
+    </script>
+</body>
+</html>
