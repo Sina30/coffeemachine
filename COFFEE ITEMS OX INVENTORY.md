@@ -1,5 +1,7 @@
--- Coffee Items (Add these to your ox_inventory/data/items.lua)
--- Coffee Drinks
+- Coffee Items (Add these to your ox_inventory/data/items.lua)
+- Coffee Drinks
+
+```lua
 ['espresso'] = {
     label = 'Espresso',
     weight = 200,
@@ -267,3 +269,4 @@
         image = 'whiskey.png',
     }
 },
+```
